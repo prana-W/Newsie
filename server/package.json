@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@ngrok/ngrok": "^1.5.2",
-    "bcrypt": "^6.0.0",
+    "bcryptjs": "",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",

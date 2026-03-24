@@ -3,7 +3,6 @@ import statusCode from '../constants/statusCode.js';
 import jwt from 'jsonwebtoken';
 import cookieOptions from '../constants/cookieOptions.js';
 
-// Todo: Kindly verify this
 const verifyAccessToken = async (req, res, next) => {
     try {
         const accessToken = req?.cookies?.accessToken;

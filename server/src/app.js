@@ -3,6 +3,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import checkHealth from './controllers/checkHealth.controller.js';
 import {errorHandler, verifyAccessToken} from './middlewares/index.js';
+import userRoutes from './routes/user.routes.js';
 import morgan from 'morgan';
 
 const app = express();
@@ -26,6 +27,7 @@ app.use(cookieParser());
 
 // API Routes
 
+app.use('/api/v1/user', userRoutes);
 app.get('/', checkHealth);
 app.get('/api/v1/check-health', checkHealth);
 

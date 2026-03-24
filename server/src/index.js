@@ -21,6 +21,6 @@ connectToDatabase().then(() => {
     });
 });
 
-connectToNgrok(port).then((listener) => {
-    console.log('Public Server URL:', listener.url());
-});
+// connectToNgrok(port).then((listener) => {
+//     console.log('Public Server URL:', listener.url());
+// });

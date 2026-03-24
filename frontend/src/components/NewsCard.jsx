@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import CategoryBadge from "./CategoryBadge";
+import OverlayComponents from "./OverlayComponents";
 
 export default function NewsCard({ news, onClick }) {
   return (
@@ -61,14 +62,12 @@ export default function NewsCard({ news, onClick }) {
         </div>
       </div>
 
-      {/* Scroll hint dots */}
-      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-1.5">
-        {[...Array(3)].map((_, i) => (
-          <div
-            key={i}
-            className={`w-1 h-1 rounded-full ${i === 1 ? "bg-white" : "bg-white/30"}`}
-          />
-        ))}
+      {/* Action buttons (Like, Dislike, Comment) */}
+      <div
+        className="absolute right-3 bottom-44 z-10 flex flex-col items-center gap-4"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <OverlayComponents newsId={news.id} />
       </div>
     </motion.div>
   );

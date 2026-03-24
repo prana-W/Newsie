@@ -1,6 +1,5 @@
 import {Outlet} from 'react-router-dom';
 import {Header, Footer} from './components';
-import {Toaster} from '@/components/ui/sonner';
 import ChatBot from '@/components/ChatBot'
 
 function Layout() {

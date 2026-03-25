@@ -5,6 +5,7 @@ import {ApiResponse} from '../utility/index.js';
 import {ApiError} from '../utility/index.js';
 import cookieOptions from '../constants/cookieOptions.js';
 
+
 export const registerUser = asyncHandler(async (req, res) => {
     const {name, email, password} = req.body;
 
@@ -23,7 +24,7 @@ export const registerUser = asyncHandler(async (req, res) => {
     const newUser = new User({
         name,
         email,
-        password
+        password,
     });
 
     await newUser.save();

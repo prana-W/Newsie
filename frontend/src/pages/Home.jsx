@@ -1,9 +1,10 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import NewsCard from "../components/NewsCard";
 import DetailView from "../components/DetailView";
 import { newsData } from "../data/newsData";
 import { useSwipe } from "../hooks/useSwipe";
+import { useNewsContext } from "../context/NewsContext";
 
 const slideVariants = {
   enter: (dir) => ({ y: dir > 0 ? "100%" : "-100%", opacity: 0 }),
@@ -15,6 +16,12 @@ export default function Home() {
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(1);
   const [showDetail, setShowDetail] = useState(false);
+  const { setCurrentCard } = useNewsContext();
+
+  // Keep NewsContext in sync with the visible card
+  useEffect(() => {
+    setCurrentCard(newsData[index]);
+  }, [index, setCurrentCard]);
 
   const goNext = useCallback(() => {
     if (index < newsData.length - 1) {

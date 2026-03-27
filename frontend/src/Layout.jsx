@@ -1,18 +1,25 @@
-import {Outlet} from 'react-router-dom';
-import {Header, Footer} from './components';
+import { Outlet } from 'react-router-dom';
+import { Header, Footer } from './components';
 import ChatBot from '@/components/ChatBot';
 import VoiceChat from '@/components/VoiceChat';
+import { NewsProvider, useNewsContext } from '@/context/NewsContext';
 
-function Layout() {
-    return (
-        <>
-            <div className="relative w-full h-full sm:w-full sm:max-w-md sm:h-screen sm:mx-auto sm:my-0 md:w-[400px] md:h-[860px] md:max-h-[95vh] md:rounded-[2.5rem] md:overflow-hidden md:shadow-[0_32px_80px_rgba(0,0,0,0.8)] md:border md:border-white/5 overflow-hidden">
-                <ChatBot />
-                <VoiceChat />
-                <Outlet />
-            </div>
-        </>
-    );
+/** Inner layout — has access to the NewsContext */
+function LayoutInner() {
+  const { currentCard } = useNewsContext();
+  return (
+    <div className="relative w-full h-full sm:w-full sm:max-w-md sm:h-screen sm:mx-auto sm:my-0 md:w-[400px] md:h-[860px] md:max-h-[95vh] md:rounded-[2.5rem] md:overflow-hidden md:shadow-[0_32px_80px_rgba(0,0,0,0.8)] md:border md:border-white/5 overflow-hidden">
+      <ChatBot />
+      <VoiceChat getCurrentCard={() => currentCard} />
+      <Outlet />
+    </div>
+  );
 }
 
-export default Layout;
+export default function Layout() {
+  return (
+    <NewsProvider>
+      <LayoutInner />
+    </NewsProvider>
+  );
+}

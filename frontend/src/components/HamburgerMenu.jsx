@@ -63,46 +63,78 @@ export default function HamburgerMenu() {
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="absolute top-0 right-0 bottom-0 w-[240px] z-50 bg-[#0d1117] border-l border-white/10 shadow-2xl flex flex-col pt-20 px-6 font-['Inter']"
+            transition={{ type: "spring", damping: 28, stiffness: 220 }}
+            className="absolute top-0 right-0 bottom-0 w-[260px] z-50 bg-[#0a0a0f] border-l border-white/5 shadow-2xl flex flex-col sm:rounded-r-none md:rounded-r-[2.5rem]"
           >
-            {/* Close button (inside sidebar, top right) */}
-            <button
-              onClick={closeMenu}
-              className="absolute top-5 right-5 p-2 text-white/60 hover:text-white transition-colors"
-            >
-              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-6 h-6">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+            {/* Header / Logo */}
+            <div className="flex items-center justify-between px-6 pt-12 pb-6 border-b border-white/5 bg-[#0d1117]/50">
+              <span
+                className="text-white font-black text-xl tracking-tight"
+                style={{ fontFamily: "'Georgia', serif" }}
+              >
+                newsie
+              </span>
+              <button
+                onClick={closeMenu}
+                className="p-2 -mr-2 text-white/40 hover:text-white hover:bg-white/5 rounded-full transition-all"
+              >
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-5 h-5">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
 
-            <nav className="flex flex-col gap-6 text-white text-lg font-medium">
-              <Link to="/" className="hover:text-primary transition-colors flex items-center gap-3">
-                <span className="text-xl">📰</span> News
+            {/* Nav Links */}
+            <nav className="flex flex-col px-4 pt-6 gap-2 text-white text-[15px] font-medium tracking-wide">
+              <Link
+                to="/"
+                className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-white/5 transition-all group"
+              >
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-5 h-5 text-white/50 group-hover:text-white transition-colors">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                </svg>
+                <span>News Feed</span>
               </Link>
-              <div className="h-[1px] w-full bg-white/10" />
               
-              <Link to="/timelines" className="hover:text-primary transition-colors flex items-center gap-3">
-                <span className="text-xl">⏱</span> Timelines
+              <Link
+                to="/timelines"
+                className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-white/5 transition-all group"
+              >
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-5 h-5 text-white/50 group-hover:text-[#a78bfa] transition-colors">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Timelines</span>
               </Link>
-              <div className="h-[1px] w-full bg-white/10" />
+
+              <div className="my-2 h-px w-full bg-white/5" />
 
               {!token ? (
-                <Link to="/signup" className="hover:text-primary transition-colors flex items-center gap-3">
-                  <span className="text-xl">👋</span> Signup
+                <Link
+                  to="/login"
+                  className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-white/5 transition-all group"
+                >
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-5 h-5 text-white/50 group-hover:text-[#06d6a0] transition-colors">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  <span>Sign Up / Log In</span>
                 </Link>
               ) : (
                 <button 
                   onClick={handleLogout} 
-                  className="text-left hover:text-red-400 transition-colors flex items-center gap-3 text-red-500"
+                  className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-red-500/10 transition-all group text-left w-full"
                 >
-                  <span className="text-xl">🚪</span> Logout
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-5 h-5 text-white/50 group-hover:text-red-400 transition-colors">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  <span className="text-white/80 group-hover:text-red-400 font-medium">Log Out</span>
                 </button>
               )}
             </nav>
 
-            <div className="mt-auto mb-10 text-center text-xs text-white/30">
-              Newsie v1.0
+            {/* Footer */}
+            <div className="mt-auto p-6 text-xs text-white/30 tracking-widest uppercase flex flex-col gap-1 items-center">
+              <span>Newsie © 2026</span>
+              <span className="text-[9px] opacity-70">Finance in real-time</span>
             </div>
           </motion.div>
         )}

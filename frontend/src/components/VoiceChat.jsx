@@ -390,7 +390,7 @@ export default function VoiceChat({ getCurrentCard }) {
 
   // ── Derived styles via Tailwind ────────────────────────────────────────────
   const fabStyles = {
-    base: 'absolute bottom-20 left-1/2 -translate-x-1/2 z-30 w-13 h-13 rounded-full border flex items-center justify-center cursor-pointer transition-all duration-300 ease-out overflow-visible',
+    base: 'absolute bottom-4 left-1/2 -translate-x-1/2 z-30 w-13 h-13 rounded-full border flex items-center justify-center cursor-pointer transition-all duration-300 ease-out overflow-visible',
     idle:       'bg-white/[0.08] border-white/15 text-white/75 hover:bg-white/[0.14] hover:border-white/30 hover:text-white hover:scale-110',
     connecting: 'bg-white/[0.08] border-amber-400/40 text-amber-200',
     active:     'bg-rose-400/25 border-rose-400/50 text-rose-200 shadow-[0_0_24px_rgba(244,63,94,0.3)]',

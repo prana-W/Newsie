@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import NewsCard from "../components/NewsCard";
 import DetailView from "../components/DetailView";
 import { newsData } from "../data/newsData";
@@ -13,6 +14,7 @@ const slideVariants = {
 };
 
 export default function Home() {
+  const navigate = useNavigate();
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(1);
   const [showDetail, setShowDetail] = useState(false);
@@ -41,6 +43,7 @@ export default function Home() {
     onSwipeUp: goNext,
     onSwipeDown: goPrev,
     onSwipeRight: () => setShowDetail(true),
+    onSwipeLeft: () => navigate("/timelines"),
   });
 
   // Desktop wheel support
@@ -100,23 +103,6 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* Desktop nav arrows */}
-      <div className="hidden md:flex absolute bottom-6 left-1/2 -translate-x-1/2 gap-4 z-20">
-        <button
-          onClick={goPrev}
-          disabled={index === 0}
-          className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-20 border border-white/10 text-white flex items-center justify-center transition-all"
-        >
-          ↑
-        </button>
-        <button
-          onClick={goNext}
-          disabled={index === newsData.length - 1}
-          className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-20 border border-white/10 text-white flex items-center justify-center transition-all"
-        >
-          ↓
-        </button>
-      </div>
     </div>
   );
 }

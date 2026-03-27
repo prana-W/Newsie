@@ -1,4 +1,4 @@
-import {Home, About, NotFound, Test} from './pages';
+import {Home, About, NotFound, Test, Timelines, TimelineDetail} from './pages';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
 import { ThemeProvider } from "@/components/theme-provider";
 import Layout from './Layout.jsx';
@@ -44,6 +44,22 @@ const router = createBrowserRouter([
             {
                 path: 'signup',
                 element: <Signup />,
+            },
+            {
+                path: 'timelines',
+                element: (
+                    <ProtectedRoute>
+                        <Timelines />
+                    </ProtectedRoute>
+                ),
+            },
+            {
+                path: 'timelines/:id',
+                element: (
+                    <ProtectedRoute>
+                        <TimelineDetail />
+                    </ProtectedRoute>
+                ),
             },
             {
                 path: '*',

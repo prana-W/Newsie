@@ -1,6 +1,6 @@
 import { useRef } from "react";
 
-export function useSwipe({ onSwipeUp, onSwipeDown, onSwipeRight, threshold = 50 }) {
+export function useSwipe({ onSwipeUp, onSwipeDown, onSwipeRight, onSwipeLeft, threshold = 50 }) {
   const startX = useRef(null);
   const startY = useRef(null);
 
@@ -19,6 +19,7 @@ export function useSwipe({ onSwipeUp, onSwipeDown, onSwipeRight, threshold = 50 
       else if (dy > threshold) onSwipeDown?.();
     } else {
       if (dx > threshold) onSwipeRight?.();
+      else if (dx < -threshold) onSwipeLeft?.();
     }
 
     startX.current = null;

@@ -5,19 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
 
-
-
-import {
-  User,
-  Mail,
-  ShieldCheck,
-  Phone,
-  Hash,
-  MapPin,
-} from "lucide-react";
-import {toast} from 'sonner';
+import { User, Mail, ShieldCheck } from "lucide-react";
+import { toast } from "sonner";
 
 export default function SignupUser() {
   const [loading, setLoading] = useState(false);
@@ -25,9 +15,6 @@ export default function SignupUser() {
     name: "",
     email: "",
     password: "",
-    phone: "",
-    pinCode: "",
-    address: "",
   });
 
   const handleChange = (key, value) => {
@@ -39,19 +26,37 @@ export default function SignupUser() {
     setLoading(true);
 
     try {
-      const res = await fetch(import.meta.env.VITE_SERVER_URL + "/api/v1/user/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(form),
-      });
+      const res = await fetch(
+        import.meta.env.VITE_SERVER_URL + "/api/v1/user/register",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(form),
+        }
+      );
 
-      if (!res.ok) throw new Error("Signup failed");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "Signup failed");
 
-      toast.success("Account created successfully");
+      // Store token if the API returns one on registration
+      const token =
+        data?.token ||
+        data?.accessToken ||
+        data?.data?.token ||
+        data?.data?.accessToken;
+      if (token) {
+        localStorage.setItem("token", token);
+        localStorage.setItem("role", "user");
+        toast.success("Account created successfully");
+        window.location.href = "/";
+      } else {
+        toast.success("Account created! Please log in.");
+        window.location.href = "/login";
+      }
     } catch (err) {
       console.error(err);
-      toast.error("Something went wrong");
+      toast.error(err?.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -76,7 +81,7 @@ export default function SignupUser() {
             Create your account
           </h1>
           <p className="text-sm text-[var(--muted-foreground)] mt-1">
-            Join the platform and contribute to verified crisis response efforts
+            Join the platform and stay up to date with verified news
           </p>
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-5">
@@ -134,55 +139,6 @@ export default function SignupUser() {
               </div>
             </div>
 
-            {/* PHONE */}
-            <div>
-              <Label>
-                Phone Number <span className="text-red-500">*</span>
-              </Label>
-              <div className="relative mt-1">
-                <Phone className="absolute left-3 top-2.5 h-4 w-4 text-[var(--muted-foreground)]" />
-                <Input
-                  required
-                  className="pl-9"
-                  placeholder="+91 9876543210"
-                  value={form.phone}
-                  onChange={(e) => handleChange("phone", e.target.value)}
-                />
-              </div>
-            </div>
-
-            {/* PIN CODE */}
-            <div>
-              <Label>
-                Pin Code <span className="text-red-500">*</span>
-              </Label>
-              <div className="relative mt-1">
-                <Hash className="absolute left-3 top-2.5 h-4 w-4 text-[var(--muted-foreground)]" />
-                <Input
-                  required
-                  className="pl-9"
-                  placeholder="e.g. 110001"
-                  value={form.pinCode}
-                  onChange={(e) => handleChange("pinCode", e.target.value)}
-                />
-              </div>
-            </div>
-
-            {/* ADDRESS */}
-            <div>
-              <Label>Address</Label>
-              <div className="relative mt-1">
-                <MapPin className="absolute left-3 top-3 h-4 w-4 text-[var(--muted-foreground)]" />
-                <Textarea
-                  rows={3}
-                  className="pl-9"
-                  placeholder="Optional address"
-                  value={form.address}
-                  onChange={(e) => handleChange("address", e.target.value)}
-                />
-              </div>
-            </div>
-
             {/* SUBMIT */}
             <Button
               type="submit"
@@ -196,7 +152,7 @@ export default function SignupUser() {
             <p className="text-center text-sm text-[var(--muted-foreground)] mt-4">
               Already have an account?{" "}
               <Link
-                to="/login/user"
+                to="/login"
                 className="text-[var(--primary)] hover:underline font-medium"
               >
                 Log in

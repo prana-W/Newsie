@@ -34,14 +34,20 @@ export default function LoginUser() {
         body: JSON.stringify(form),
       });
 
-      if (!res.ok) throw new Error("Login failed");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "Login failed");
+      
+      // Persist token — adjust the key if your API returns it differently
+      const token = data?.token || data?.accessToken || data?.data?.token || data?.data?.accessToken;
+      if (token) localStorage.setItem('token', token);
+      localStorage.setItem('role', 'user');
+
+      console.log(token);
 
       toast.success("Logged in successfully");
-      localStorage.setItem('role', 'user')
-        window.location.href = '/';
+      window.location.href = '/';
       // later → redirect to dashboard
     } catch (err) {
-      console.error(err);
       toast.error(err?.message || err);
     } finally {
       setLoading(false);

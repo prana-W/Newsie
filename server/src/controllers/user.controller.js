@@ -68,8 +68,8 @@ export const loginUser = asyncHandler(async (req, res) => {
         .json(
             new ApiResponse(
                 statusCode.OK,
-                {email: user.email},
-                'User logged in successfully'
+                'User logged in successfully',
+                {email: user.email, token: accessToken},
             )
         );
 });

@@ -34,14 +34,20 @@ export default function LoginUser() {
         body: JSON.stringify(form),
       });
 
-      if (!res.ok) throw new Error("Login failed");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "Login failed");
+      
+      // Persist token — adjust the key if your API returns it differently
+      const token = data?.token || data?.accessToken || data?.data?.token || data?.data?.accessToken;
+      if (token) localStorage.setItem('token', token);
+      localStorage.setItem('role', 'user');
+
+      console.log(token);
 
       toast.success("Logged in successfully");
-      localStorage.setItem('role', 'user')
-        window.location.href = '/';
+      window.location.href = '/';
       // later → redirect to dashboard
     } catch (err) {
-      console.error(err);
       toast.error(err?.message || err);
     } finally {
       setLoading(false);
@@ -49,87 +55,90 @@ export default function LoginUser() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--background)] flex items-center justify-center px-4">
-      <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 rounded-2xl overflow-hidden border border-[var(--border)] shadow-xl animate-[fadeUp_0.6s_ease-out]">
-
-        {/* LEFT PANEL (DESKTOP ONLY) */}
-        <div className="hidden lg:block relative bg-[var(--accent-cyan-lighter)]">
-          <img
-            src="/images/userauth.png"
-            alt="Community support"
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-        </div>
-
-        {/* RIGHT PANEL */}
-        <Card className="rounded-none border-0 p-8">
-          <h1 className="text-2xl font-semibold text-[var(--foreground)]">
-            Log in to your account
-          </h1>
-          <p className="text-sm text-[var(--muted-foreground)] mt-1">
-            Access your dashboard and manage your activity
-          </p>
-
-          <form onSubmit={handleSubmit} className="mt-6 space-y-5">
-
-            {/* EMAIL */}
-            <div>
-              <Label>
-                Email Address <span className="text-red-500">*</span>
-              </Label>
-              <div className="relative mt-1">
-                <Mail className="absolute left-3 top-2.5 h-4 w-4 text-[var(--muted-foreground)]" />
-                <Input
-                  type="email"
-                  required
-                  className="pl-9"
-                  placeholder="user@example.com"
-                  value={form.email}
-                  onChange={(e) => handleChange("email", e.target.value)}
-                />
-              </div>
-            </div>
-
-            {/* PASSWORD */}
-            <div>
-              <Label>
-                Password <span className="text-red-500">*</span>
-              </Label>
-              <div className="relative mt-1">
-                <ShieldCheck className="absolute left-3 top-2.5 h-4 w-4 text-[var(--muted-foreground)]" />
-                <Input
-                  type="password"
-                  required
-                  className="pl-9"
-                  placeholder="Enter your password"
-                  value={form.password}
-                  onChange={(e) => handleChange("password", e.target.value)}
-                />
-              </div>
-            </div>
-
-            {/* SUBMIT */}
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90"
-            >
-              {loading ? "Logging in..." : "Log in"}
-            </Button>
-
-            {/* SIGNUP LINK */}
-            <p className="text-center text-sm text-[var(--muted-foreground)] mt-4">
-              Don’t have an account?{" "}
-              <Link
-                to="/signup/user"
-                className="text-[var(--primary)] hover:underline font-medium"
-              >
-                Create one
-              </Link>
-            </p>
-          </form>
-        </Card>
+    <div className="min-h-screen bg-gradient-to-br from-[#0a0a0f] to-[#0d1117] flex flex-col items-center justify-center px-6 font-['Inter']">
+      
+      {/* Brand */}
+      <div className="mb-10 text-center animate-[fadeUp_0.4s_ease-out]">
+        <span
+          className="text-white font-black text-4xl tracking-tight"
+          style={{ fontFamily: "'Georgia', serif", textShadow: "0 4px 20px rgba(167, 139, 250, 0.4)" }}
+        >
+          newsie
+        </span>
       </div>
+
+      <div className="w-full max-w-[360px] bg-[#0d1117]/80 backdrop-blur-xl rounded-[2rem] border border-white/10 p-8 shadow-2xl animate-[fadeUp_0.6s_ease-out]">
+        <h1 className="text-xl font-bold text-white mb-1 tracking-tight">
+          Welcome back
+        </h1>
+        <p className="text-sm text-white/40 mb-8">
+          Enter your details to access your account.
+        </p>
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+
+          {/* EMAIL */}
+          <div className="space-y-1.5">
+            <Label className="text-white/70 text-xs uppercase tracking-wider font-semibold ml-1">
+              Email Address
+            </Label>
+            <div className="relative">
+              <Mail className="absolute left-3.5 top-3 h-4 w-4 text-white/30" />
+              <Input
+                type="email"
+                required
+                className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/20 h-11 rounded-xl focus-visible:ring-1 focus-visible:ring-[#a78bfa]"
+                placeholder="user@example.com"
+                value={form.email}
+                onChange={(e) => handleChange("email", e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* PASSWORD */}
+          <div className="space-y-1.5">
+            <Label className="text-white/70 text-xs uppercase tracking-wider font-semibold ml-1">
+              Password
+            </Label>
+            <div className="relative">
+              <ShieldCheck className="absolute left-3.5 top-3 h-4 w-4 text-white/30" />
+              <Input
+                type="password"
+                required
+                className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/20 h-11 rounded-xl focus-visible:ring-1 focus-visible:ring-[#a78bfa]"
+                placeholder="••••••••"
+                value={form.password}
+                onChange={(e) => handleChange("password", e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* SUBMIT */}
+          <Button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-[#a78bfa] hover:bg-[#a78bfa]/90 text-white h-11 rounded-xl font-semibold tracking-wide mt-2 transition-all shadow-[0_0_20px_rgba(167,139,250,0.3)] hover:shadow-[0_0_25px_rgba(167,139,250,0.5)]"
+          >
+            {loading ? "Logging in..." : "Log In"}
+          </Button>
+
+          {/* SIGNUP LINK */}
+          <p className="text-center text-sm text-white/40 mt-6 pt-2">
+            Don’t have an account?{" "}
+            <Link
+              to="/signup"
+              className="text-[#a78bfa] hover:text-white transition-colors font-medium"
+            >
+              Sign up
+            </Link>
+          </p>
+        </form>
+      </div>
+      
+      {/* Back to Home Link */}
+      <Link to="/" className="mt-8 text-xs text-white/30 hover:text-white transition-colors">
+        ← Back to News Feed
+      </Link>
     </div>
   );
 }

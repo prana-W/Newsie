@@ -5,9 +5,9 @@ import {ApiResponse} from '../utility/index.js';
 import {ApiError} from '../utility/index.js';
 import cookieOptions from '../constants/cookieOptions.js';
 
-
 export const registerUser = asyncHandler(async (req, res) => {
-    const {name, email, password} = req.body;
+    const {name, email, password, tone, language, preferredCategories} =
+        req.body;
 
     if (!name || !email || !password) {
         throw new ApiError(statusCode.BAD_REQUEST, 'Missing required fields');
@@ -25,19 +25,27 @@ export const registerUser = asyncHandler(async (req, res) => {
         name,
         email,
         password,
+        preferences: {
+            tone: tone || 'neutral',
+            language: language || 'English',
+            preferredCategories: Array.isArray(preferredCategories)
+                ? preferredCategories
+                : [],
+        },
     });
 
     await newUser.save();
 
-    return res
-        .status(statusCode.CREATED)
-        .json(
-            new ApiResponse(
-                statusCode.CREATED,
-                {email: newUser?.email},
-                'User registered successfully'
-            )
-        );
+    return res.status(statusCode.CREATED).json(
+        new ApiResponse(
+            statusCode.CREATED,
+            {
+                email: newUser?.email,
+                preferences: newUser?.preferences,
+            },
+            'User registered successfully'
+        )
+    );
 });
 
 export const loginUser = asyncHandler(async (req, res) => {
@@ -66,11 +74,11 @@ export const loginUser = asyncHandler(async (req, res) => {
     res.cookie('accessToken', accessToken, cookieOptions)
         .status(statusCode.OK)
         .json(
-            new ApiResponse(
-                statusCode.OK,
-                'User logged in successfully',
-                {email: user.email, token: accessToken},
-            )
+            new ApiResponse(statusCode.OK, 'User logged in successfully', {
+                email: user.email,
+                token: accessToken,
+                preferences: user.preferences,
+            })
         );
 });
 

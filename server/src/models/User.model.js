@@ -25,7 +25,23 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: true,
             select: false,
-        }
+        },
+        preferences: {
+            tone: {
+                type: String,
+                default: 'neutral',
+                trim: true,
+            },
+            language: {
+                type: String,
+                default: 'English',
+                trim: true,
+            },
+            preferredCategories: {
+                type: [String],
+                default: [],
+            },
+        },
     },
     {timestamps: true}
 );

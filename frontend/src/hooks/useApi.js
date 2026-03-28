@@ -1,6 +1,7 @@
 import {useState, useCallback} from 'react';
+import {SERVER_URL} from '@/lib/env';
 
-const useApi = (baseURL = import.meta.env.VITE_SERVER_URL) => {
+const useApi = (baseURL = SERVER_URL) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 

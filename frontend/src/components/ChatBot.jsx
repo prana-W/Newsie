@@ -1,16 +1,17 @@
-import { useState, useEffect, useRef } from 'react';
-import { MessageCircle, X, Send, Mic, MicOff } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
-import { toast } from 'sonner';
+import {useState, useEffect, useRef} from 'react';
+import {MessageCircle, X, Send, Mic, MicOff} from 'lucide-react';
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
+import {Card} from '@/components/ui/card';
+import {AI_SERVER_URL, SERVER_URL} from '@/lib/env';
+import {toast} from 'sonner';
 
 const CHAT_STORAGE_KEY = 'ai-chatbot-messages';
 const CHAT_TIMESTAMP_KEY = 'ai-chatbot-timestamp';
 const CHAT_EXPIRY_TIME = 10 * 60 * 1000; // 10 minutes in milliseconds
 
 const AIChatbot = () => {
-    console.log('AI Bot activated!')
+    console.log('AI Bot activated!');
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
@@ -28,15 +29,15 @@ const AIChatbot = () => {
 
             navigator.geolocation.getCurrentPosition(
                 async (position) => {
-                    const { latitude, longitude } = position.coords;
+                    const {latitude, longitude} = position.coords;
 
                     try {
                         const response = await fetch(
                             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`,
                             {
                                 headers: {
-                                    'User-Agent': 'EmergencyAlert/1.0'
-                                }
+                                    'User-Agent': 'EmergencyAlert/1.0',
+                                },
                             }
                         );
 
@@ -46,9 +47,13 @@ const AIChatbot = () => {
                             latitude,
                             longitude,
                             pincode: data.address?.postcode || 'Unknown',
-                            city: data.address?.city || data.address?.town || data.address?.village || 'Unknown',
+                            city:
+                                data.address?.city ||
+                                data.address?.town ||
+                                data.address?.village ||
+                                'Unknown',
                             state: data.address?.state || 'Unknown',
-                            fullAddress: data.display_name
+                            fullAddress: data.display_name,
                         });
                     } catch {
                         reject(new Error('Failed to fetch location details'));
@@ -61,8 +66,12 @@ const AIChatbot = () => {
 
     // Initialize speech recognition
     useEffect(() => {
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (
+            'webkitSpeechRecognition' in window ||
+            'SpeechRecognition' in window
+        ) {
+            const SpeechRecognition =
+                window.SpeechRecognition || window.webkitSpeechRecognition;
             recognitionRef.current = new SpeechRecognition();
             recognitionRef.current.continuous = false;
             recognitionRef.current.interimResults = false;
@@ -115,7 +124,7 @@ const AIChatbot = () => {
 
     // Auto-scroll to bottom
     useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});
     }, [messages]);
 
     // Clear expired messages every minute
@@ -157,20 +166,22 @@ const AIChatbot = () => {
             text,
             isUser,
             isError,
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            timestamp: new Date().toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+            }),
         };
-        setMessages(prev => [...prev, newMessage]);
+        setMessages((prev) => [...prev, newMessage]);
     };
-
 
     const handleGetRoute = async (query) => {
         try {
             // Step 1: Get route
-            const routeResponse = await fetch(import.meta.env.VITE_AI_SERVER_URL+'/ai/get_route', {
+            const routeResponse = await fetch(AI_SERVER_URL + '/ai/get_route', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: query, action: "AS" }),
-                credentials: "include"
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({message: query, action: 'AS'}),
+                credentials: 'include',
             });
 
             if (!routeResponse.ok) throw new Error('Failed to get route');
@@ -179,16 +190,14 @@ const AIChatbot = () => {
             const selectedRoute = routeData.selected_route;
 
             if (!selectedRoute) {
-
                 throw new Error('Unknown route selected');
-
             }
 
             const locationData = await getLocationData();
 
-            const apiResponse = await fetch(import.meta.env.VITE_SERVER_URL+selectedRoute, {
+            const apiResponse = await fetch(SERVER_URL + selectedRoute, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
                     audioVideo: 'NA',
                     pincode: locationData.pincode,
@@ -197,29 +206,37 @@ const AIChatbot = () => {
                     location: locationData.fullAddress,
                     city: locationData.city,
                     state: locationData.state,
-                    timeStamp: new Date().toISOString()
+                    timeStamp: new Date().toISOString(),
                 }),
-                credentials: "include"
-        });
+                credentials: 'include',
+            });
 
             if (!apiResponse.ok) throw new Error('API call failed');
 
             const apiData = await apiResponse.json();
 
             // Step 3: Interpret the response
-            const interpretResponse = await fetch(import.meta.env.VITE_AI_SERVER_URL+'/ai/interpret', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ unformatted_data: apiData })
-            });
+            const interpretResponse = await fetch(
+                AI_SERVER_URL + '/ai/interpret',
+                {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({unformatted_data: apiData}),
+                }
+            );
 
-            if (!interpretResponse.ok) throw new Error('Failed to interpret response');
+            if (!interpretResponse.ok)
+                throw new Error('Failed to interpret response');
 
             const interpretData = await interpretResponse.json();
             addMessage(interpretData.readable_message);
         } catch (error) {
             console.error('Get route error:', error);
-            addMessage('Sorry, I encountered an error processing your request.', false, true);
+            addMessage(
+                'Sorry, I encountered an error processing your request.',
+                false,
+                true
+            );
         }
     };
 
@@ -282,7 +299,9 @@ const AIChatbot = () => {
                         {messages.length === 0 && (
                             <div className="text-center text-gray-500 mt-8">
                                 <MessageCircle className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                                <p className="text-sm">Start a conversation with AI Assistant</p>
+                                <p className="text-sm">
+                                    Start a conversation with AI Assistant
+                                </p>
                             </div>
                         )}
 
@@ -296,14 +315,16 @@ const AIChatbot = () => {
                                         message.isUser
                                             ? 'bg-primary text-primary-foreground'
                                             : message.isError
-                                                ? 'bg-red-100 text-red-900'
-                                                : 'bg-white text-gray-900 shadow-sm border'
+                                              ? 'bg-red-100 text-red-900'
+                                              : 'bg-white text-gray-900 shadow-sm border'
                                     }`}
                                 >
-                                    <p className="text-sm whitespace-pre-wrap break-words">{message.text}</p>
+                                    <p className="text-sm whitespace-pre-wrap break-words">
+                                        {message.text}
+                                    </p>
                                     <span className="text-xs opacity-70 mt-1 block">
-                    {message.timestamp}
-                  </span>
+                                        {message.timestamp}
+                                    </span>
                                 </div>
                             </div>
                         ))}
@@ -312,9 +333,18 @@ const AIChatbot = () => {
                             <div className="flex justify-start">
                                 <div className="bg-white rounded-lg px-4 py-2 shadow-sm border">
                                     <div className="flex gap-1">
-                                        <div className="h-2 w-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                                        <div className="h-2 w-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                                        <div className="h-2 w-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                                        <div
+                                            className="h-2 w-2 bg-gray-400 rounded-full animate-bounce"
+                                            style={{animationDelay: '0ms'}}
+                                        ></div>
+                                        <div
+                                            className="h-2 w-2 bg-gray-400 rounded-full animate-bounce"
+                                            style={{animationDelay: '150ms'}}
+                                        ></div>
+                                        <div
+                                            className="h-2 w-2 bg-gray-400 rounded-full animate-bounce"
+                                            style={{animationDelay: '300ms'}}
+                                        ></div>
                                     </div>
                                 </div>
                             </div>
@@ -325,7 +355,6 @@ const AIChatbot = () => {
 
                     {/* Input Area */}
                     <div className="p-4 border-t bg-white rounded-b-lg">
-
                         {/* Input Box */}
                         <div className="flex gap-2">
                             <Input
@@ -339,7 +368,9 @@ const AIChatbot = () => {
 
                             <Button
                                 onClick={toggleListening}
-                                variant={isListening ? 'destructive' : 'outline'}
+                                variant={
+                                    isListening ? 'destructive' : 'outline'
+                                }
                                 size="icon"
                                 disabled={isLoading}
                             >

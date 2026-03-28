@@ -1,0 +1,12 @@
+﻿{
+    "statusCode":  200,
+    "message":  "Article translated",
+    "data":  {
+                 "id":  "69c3f34005bc77265d0e3d49",
+                 "title":  "Shapoorji Pallonji Group unit likely to face higher costs in new fundraising, sources say",
+                 "description":  "Shapoorji Pallonji Group company, Goswami Infratech, plans to raise funds. Investors are demanding higher interest rates. This follows a similar situation with another group unit, Porteast Investment. The new bond issue might be delayed. Funds are needed to refinance existing debt and for corporate needs. The issuance is secured by a stake in Tata Sons.",
+                 "language":  "Telugu",
+                 "tone":  "neutral"
+             },
+    "success":  true
+}

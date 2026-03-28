@@ -1,16 +1,17 @@
-import React, { createContext, useEffect, useState } from "react";
-import { io } from "socket.io-client";
+import React, {createContext, useEffect, useState} from 'react';
+import {io} from 'socket.io-client';
+import {SERVER_URL} from '@/lib/env';
 
 const SocketContext = createContext(null);
 
-export const SocketProvider = ({ children }) => {
+export const SocketProvider = ({children}) => {
     const [socket, setSocket] = useState(null);
 
     useEffect(() => {
         // Connect to backend
-        const socketInstance = io(import.meta.env.VITE_SERVER_URL, {
+        const socketInstance = io(SERVER_URL, {
             withCredentials: true,
-            transports: ["websocket"],
+            transports: ['websocket'],
         });
 
         setSocket(socketInstance);
@@ -28,4 +29,4 @@ export const SocketProvider = ({ children }) => {
     );
 };
 
-export {SocketContext}
+export {SocketContext};

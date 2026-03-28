@@ -1,0 +1,11 @@
+{
+  "ignore": [
+    "storage/*",
+    ".cache/*",
+    "personalized/*",
+    "test_*.json",
+    "verify_db.js"
+  ],
+  "watch": ["src"],
+  "ext": "js,mjs,cjs,json"
+}

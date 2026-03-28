@@ -2,9 +2,9 @@ import mongoose from 'mongoose';
 
 async function connectToDatabase() {
     try {
-        const connectionInstance = await mongoose.connect(
-            `${process.env.MONGODB_URI}`
-        );
+        const connectionInstance = await mongoose.connect(`${process.env.MONGODB_URI}`, {
+            dbName: process.env.MONGO_DB_NAME || undefined,
+        });
 
         if (connectionInstance)
             console.log(`✅ Database connected: ${process.env.MONGODB_URI}`);

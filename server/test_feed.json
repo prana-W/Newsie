@@ -1,0 +1,64 @@
+﻿{
+    "statusCode":  200,
+    "message":  "News feed fetched successfully",
+    "data":  {
+                 "articles":  [
+                                  {
+                                      "id":  "69c3f35105bc77265d0e3d52",
+                                      "title":  "SC ruling casts a tax shadow on merger share-swap deals",
+                                      "description":  "A Supreme Court ruling impacts shareholders in company mergers. Those receiving new shares via share-swap may face taxes on gains, even without selling. This applies if their old shares were considered \u0027stock-in-trade\u0027. The difference in value between old and new shares will be taxed as business income. This decision could lead to more tax disputes for investors and traders.",
+                                      "fullDescription":  "A Supreme Court ruling impacts shareholders in company mergers. Those receiving new shares via share-swap may face taxes on gains, even without selling. This applies if their old shares were considered \u0027stock-in-trade\u0027. The difference in value between old and new shares will be taxed as business income. This decision could lead to more tax disputes for investors and traders.",
+                                      "image":  "https://img.etimg.com/thumb/msid-126473512,width-1200,height-630,imgsize-45720,overlay-economictimes/articleshow.jpg",
+                                      "image_url":  "https://img.etimg.com/thumb/msid-126473512,width-1200,height-630,imgsize-45720,overlay-economictimes/articleshow.jpg",
+                                      "body":  "",
+                                      "author":  "SECTIONS\nSC ruling casts a tax shadow on merger share-swap deals\nBy Sugata Ghosh, ET BureauLast Updated: Jan 12, 2026, 06:46:00 AM IST",
+                                      "url":  "https://economictimes.indiatimes.com/news/company/corporate-trends/sc-ruling-casts-a-tax-shadow-on-merger-share-swap-deals/articleshow/126470335.cms",
+                                      "category":  "Corporate Governance",
+                                      "source":  "Economic Times",
+                                      "tags":  [
+                                                   "Stock Markets",
+                                                   "Taxation \u0026 GST",
+                                                   "Mergers \u0026 Acquisitions",
+                                                   "Legal \u0026 Court Rulings",
+                                                   "Auto \u0026 EV"
+                                               ],
+                                      "sentiment":  "positive",
+                                      "sentiment_score":  0.1945,
+                                      "fetched_at":  "2026-03-25T09:08:09.980Z",
+                                      "likeCount":  1,
+                                      "dislikeCount":  0,
+                                      "commentCount":  0,
+                                      "language":  "English",
+                                      "tone":  "genz"
+                                  },
+                                  {
+                                      "id":  "69c3f34f05bc77265d0e3d51",
+                                      "title":  "From Delhi to Davos — A Spirit of Dialogue",
+                                      "description":  "As the World Economic Forum\u0027s Annual Meeting convenes in Davos, the small Swiss town transforms into a global hub for discussing pressing economic, political, and technological issues. This year\u0027s theme, \u0027A Spirit of Dialogue,\u0027 emphasizes managing differences and keeping channels open in a contested world.",
+                                      "fullDescription":  "As the World Economic Forum\u0027s Annual Meeting convenes in Davos, the small Swiss town transforms into a global hub for discussing pressing economic, political, and technological issues. This year\u0027s theme, \u0027A Spirit of Dialogue,\u0027 emphasizes managing differences and keeping channels open in a contested world.",
+                                      "image":  "https://img.etimg.com/thumb/msid-126429325,width-1200,height-630,imgsize-1497283,overlay-economictimes/articleshow.jpg",
+                                      "image_url":  "https://img.etimg.com/thumb/msid-126429325,width-1200,height-630,imgsize-1497283,overlay-economictimes/articleshow.jpg",
+                                      "body":  "",
+                                      "author":  "SECTIONS\nFrom Delhi to Davos — A Spirit of Dialogue\nBy Ajay Khanna, ET CONTRIBUTORSLast Updated: Jan 09, 2026, 12:21:00 PM IST",
+                                      "url":  "https://economictimes.indiatimes.com/news/company/corporate-trends/from-delhi-to-davos-a-spirit-of-dialogue/articleshow/126429252.cms",
+                                      "category":  "Corporate Governance",
+                                      "source":  "Economic Times",
+                                      "tags":  [
+                                                   "Macroeconomics",
+                                                   "IT \u0026 Technology"
+                                               ],
+                                      "sentiment":  "neutral",
+                                      "sentiment_score":  0.025,
+                                      "fetched_at":  "2026-03-25T09:08:07.477Z",
+                                      "likeCount":  0,
+                                      "dislikeCount":  0,
+                                      "commentCount":  0,
+                                      "language":  "English",
+                                      "tone":  "genz"
+                                  }
+                              ],
+                 "nextCursor":  "69c3f34f05bc77265d0e3d51",
+                 "hasMore":  true
+             },
+    "success":  true
+}

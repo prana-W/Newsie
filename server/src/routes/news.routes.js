@@ -11,6 +11,7 @@ import {
     getTimelines,
     likeNews,
     translateArticle,
+    generateVideo,
 } from '../controllers/news.controller.js';
 
 const router = Router();
@@ -25,5 +26,6 @@ router.post('/:newsId/dislike', dislikeNews);
 router.get('/:newsId/comments', getComments);
 router.post('/:newsId/comments', addComment);
 router.post('/:newsId/translate', translateArticle);
+router.post('/:newsId/video', generateVideo);
 
 export default router;

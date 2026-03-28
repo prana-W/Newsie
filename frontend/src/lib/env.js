@@ -11,5 +11,5 @@ export const SERVER_URL = normalizeBaseUrl(
 
 export const AI_SERVER_URL = normalizeBaseUrl(
     import.meta.env.VITE_AI_SERVER_URL,
-    'http://localhost:8001'
+    'http://localhost:8100'
 );

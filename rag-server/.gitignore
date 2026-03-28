@@ -1,64 +1,38 @@
-# Python
+# Python cache and build artifacts
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
-.Python
 build/
-develop-eggs/
 dist/
-downloads/
-eggs/
 .eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
 *.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
 .pytest_cache/
 .coverage
 htmlcov/
 .mypy_cache/
 .ruff_cache/
 
-# Environment and Virtual Environments
+# Environment and virtual environments
 .env
+.env.*
 .venv/
-env/
 venv/
+env/
 ENV/
-env.bak/
-venv.bak/
 
-# uv
-uv.lock
-# Note: uv.lock is sometimes committed, but if the user wants a clean .gitignore,
-# usually it's better to keep it unless they are building a library. 
-# For an app, uv.lock is often committed. I'll leave it out of ignore for now 
-# and focus on temp/sensitive files. Actually, I'll include it if they want 
-# but usually uv projects commit uv.lock. I'll stick to temp files.
-
-# Vector Database / ChromaDB
-.chroma/
-
-# Logs and temporary files
+# Local generated outputs
 *.log
 out.txt
 out_new.txt
 direct_rag_test.json
+.chroma/
+static/videos/
 
-# IDEs
+# Editor and OS files
 .vscode/
 .idea/
 *.swp
 *.swo
-
-# OS
 .DS_Store
 Thumbs.db

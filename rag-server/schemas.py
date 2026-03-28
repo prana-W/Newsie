@@ -178,6 +178,7 @@ class VibeVideoRequest(BaseModel):
     article_id: str
     title: str
     description: str
+    summary: str = Field(default="", description="Full ET summary/body context for richer prompt generation.")
 
 
 class VibeVideoResponse(BaseModel):

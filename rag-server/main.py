@@ -60,7 +60,7 @@ vibe_video_generator_instance: VibeVideoGenerator | None = None
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Initialise shared resources on startup, clean up on shutdown."""
-    global router_instance, vibe_translator_instance
+    global router_instance, vibe_translator_instance, vibe_video_generator_instance
     logger.info("Starting RAG server — initialising services...")
 
     try:

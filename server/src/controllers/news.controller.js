@@ -9,6 +9,9 @@ import {ApiError, ApiResponse, asyncHandler} from '../utility/index.js';
 import {
     getRagRouteForArticle,
     personalizeArticle,
+    readUserCache,
+    writeUserCache,
+    generateVibeVideo,
 } from '../services/personalization.service.js';
 
 const FEED_PAGE_SIZE = 7;
@@ -70,8 +73,11 @@ const buildBlend = async ({articles, preferences}) => {
         return articles;
     }
 
-    const preferredCategories = preferences.preferredCategories.map((category) =>
-        String(category || '').toLowerCase().trim()
+    const preferredCategories = preferences.preferredCategories.map(
+        (category) =>
+            String(category || '')
+                .toLowerCase()
+                .trim()
     );
 
     const routes = await Promise.all(
@@ -84,9 +90,7 @@ const buildBlend = async ({articles, preferences}) => {
         )
     );
 
-    const arcIds = routes
-        .map((route) => route?.arcId)
-        .filter(Boolean);
+    const arcIds = routes.map((route) => route?.arcId).filter(Boolean);
 
     const relatedArcs = arcIds.length
         ? await StoryArc.find({arc_id: {$in: arcIds}})
@@ -99,7 +103,9 @@ const buildBlend = async ({articles, preferences}) => {
 
     const scored = articles.map((article, index) => {
         const route = routes[index];
-        const articleCategory = String(article.section || '').toLowerCase().trim();
+        const articleCategory = String(article.section || '')
+            .toLowerCase()
+            .trim();
         const matchedArcCategory = String(
             arcCategoryMap.get(route?.arcId) || ''
         )
@@ -107,9 +113,8 @@ const buildBlend = async ({articles, preferences}) => {
             .trim();
 
         const categoryMatch = preferredCategories.includes(articleCategory);
-        const semanticCategoryMatch = preferredCategories.includes(
-            matchedArcCategory
-        );
+        const semanticCategoryMatch =
+            preferredCategories.includes(matchedArcCategory);
         const isImportant =
             Math.abs(article.sentiment_score || 0) >= 0.2 ||
             ['Markets News', 'Economy', 'Policy'].includes(article.section);
@@ -182,12 +187,12 @@ const REBUILD_COOLDOWN = 1000 * 60 * 60; // 1 hour
 const rebuildArcsIfNeeded = async () => {
     // Avoid concurrent rebuilds
     if (isRebuilding) return;
-    
+
     const now = Date.now();
     const arcsCount = await StoryArc.countDocuments();
-    
+
     // If arcs exist and we haven't hit cooldown, skip
-    if (arcsCount > 0 && (now - lastRebuildTime < REBUILD_COOLDOWN)) {
+    if (arcsCount > 0 && now - lastRebuildTime < REBUILD_COOLDOWN) {
         return;
     }
 
@@ -207,70 +212,71 @@ const rebuildArcsIfNeeded = async () => {
 
     isRebuilding = true;
     try {
+        const sourceArticles = await News.find()
+            .sort({fetched_at: -1, _id: -1})
+            .limit(250)
+            .lean();
 
-    const sourceArticles = await News.find()
-        .sort({fetched_at: -1, _id: -1})
-        .limit(250)
-        .lean();
-
-    if (sourceArticles.length === 0) {
-        return;
-    }
-
-    const groups = new Map();
-
-    for (const article of sourceArticles) {
-        const section = article.section || 'General';
-
-        if (!groups.has(section)) {
-            groups.set(section, []);
+        if (sourceArticles.length === 0) {
+            return;
         }
 
-        groups.get(section).push(article);
-    }
+        const groups = new Map();
 
-    const arcs = [];
-    for (const [section, items] of groups) {
-        const sorted = [...items].sort(
-            (a, b) => new Date(a.fetched_at || 0) - new Date(b.fetched_at || 0)
-        );
+        for (const article of sourceArticles) {
+            const section = article.section || 'General';
 
-        if (sorted.length === 0) {
-            continue;
+            if (!groups.has(section)) {
+                groups.set(section, []);
+            }
+
+            groups.get(section).push(article);
         }
 
-        const firstId = String(sorted[0]._id).slice(-6);
-        const lastId = String(sorted[sorted.length - 1]._id).slice(-6);
-        const slug = section.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-        const arcId = `${slug}-${firstId}-${lastId}`;
+        const arcs = [];
+        for (const [section, items] of groups) {
+            const sorted = [...items].sort(
+                (a, b) =>
+                    new Date(a.fetched_at || 0) - new Date(b.fetched_at || 0)
+            );
 
-        const compiled_timeline = sorted.map((item) => ({
-            event_text: item.title,
-            event_date: new Date(item.fetched_at || Date.now())
-                .toISOString()
-                .slice(0, 10),
-            article_id: item._id,
-        }));
+            if (sorted.length === 0) {
+                continue;
+            }
 
-        const latestDate = new Date(
-            sorted[sorted.length - 1].fetched_at || Date.now()
-        );
-        const ageDays = Math.max(
-            0,
-            Math.floor(
-                (Date.now() - latestDate.getTime()) / (1000 * 60 * 60 * 24)
-            )
-        );
+            const firstId = String(sorted[0]._id).slice(-6);
+            const lastId = String(sorted[sorted.length - 1]._id).slice(-6);
+            const slug = section.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            const arcId = `${slug}-${firstId}-${lastId}`;
 
-        arcs.push({
-            arc_id: arcId,
-            topic_summary: `${section} Watch`,
-            category: section,
-            associated_articles: sorted.map((item) => item._id),
-            compiled_timeline,
-            hotScore: compiled_timeline.length * 4 + Math.max(1, 10 - ageDays),
-        });
-    }
+            const compiled_timeline = sorted.map((item) => ({
+                event_text: item.title,
+                event_date: new Date(item.fetched_at || Date.now())
+                    .toISOString()
+                    .slice(0, 10),
+                article_id: item._id,
+            }));
+
+            const latestDate = new Date(
+                sorted[sorted.length - 1].fetched_at || Date.now()
+            );
+            const ageDays = Math.max(
+                0,
+                Math.floor(
+                    (Date.now() - latestDate.getTime()) / (1000 * 60 * 60 * 24)
+                )
+            );
+
+            arcs.push({
+                arc_id: arcId,
+                topic_summary: `${section} Watch`,
+                category: section,
+                associated_articles: sorted.map((item) => item._id),
+                compiled_timeline,
+                hotScore:
+                    compiled_timeline.length * 4 + Math.max(1, 10 - ageDays),
+            });
+        }
 
         if (arcs.length > 0) {
             await StoryArc.deleteMany({});
@@ -343,6 +349,46 @@ export const getNewsFeed = asyncHandler(async (req, res) => {
             hasMore: Boolean(nextCursor),
         })
     );
+});
+
+export const generateVideo = asyncHandler(async (req, res) => {
+    const {newsId} = req.params;
+    const isDemo = String(newsId || '').startsWith('demo-');
+
+    if (!isValidObjectId(newsId) && !isDemo) {
+        throw new ApiError(statusCode.BAD_REQUEST, 'Invalid article ID');
+    }
+
+    const article = isDemo
+        ? {
+              _id: newsId,
+              title: 'Demo headline',
+              description:
+                  'AI video preview for demo data — replace with live article to get tailored animation.',
+              body:
+                  'Demo ET summary: Market anchors debate policy shifts, sector rotation, earnings surprises, and investor sentiment with playful newsroom satire.',
+          }
+        : await News.findById(newsId);
+
+    if (!article) {
+        throw new ApiError(statusCode.NOT_FOUND, 'Article not found');
+    }
+
+    const {title, description} = article;
+    const summary = [article.description, article.body]
+        .filter((part) => typeof part === 'string' && part.trim().length > 0)
+        .join('\n\n');
+
+    const result = await generateVibeVideo({
+        articleId: newsId,
+        title,
+        description,
+        summary,
+    });
+
+    return res
+        .status(statusCode.CREATED)
+        .json(new ApiResponse(statusCode.CREATED, 'Video generated', result));
 });
 
 export const likeNews = asyncHandler(async (req, res) => {

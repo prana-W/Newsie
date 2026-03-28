@@ -76,3 +76,8 @@ export const translateNews = (newsId, language, tone) =>
         method: 'POST',
         body: JSON.stringify({language, tone}),
     });
+
+export const generateNewsVideo = (newsId) =>
+    request(`/api/v1/news/${newsId}/video`, {
+        method: 'POST',
+    });

@@ -18,7 +18,7 @@ const sanitize = (value) =>
 const getCacheFilePath = (userId) =>
     path.join(CACHE_DIR, `${sanitize(userId || 'guest')}.json`);
 
-const readUserCache = async (userId) => {
+export const readUserCache = async (userId) => {
     await ensureDir();
     const filePath = getCacheFilePath(userId);
 
@@ -30,7 +30,7 @@ const readUserCache = async (userId) => {
     }
 };
 
-const writeUserCache = async (userId, cacheObject) => {
+export const writeUserCache = async (userId, cacheObject) => {
     await ensureDir();
     const filePath = getCacheFilePath(userId);
     await fs.writeFile(filePath, JSON.stringify(cacheObject, null, 2), 'utf-8');
@@ -39,7 +39,13 @@ const writeUserCache = async (userId, cacheObject) => {
 /**
  * Call the RAG server's vibe-translate endpoint (Gemini 2.5 Flash Lite).
  */
-const callVibeTranslate = async ({articleId, title, description, tone, language}) => {
+const callVibeTranslate = async ({
+    articleId,
+    title,
+    description,
+    tone,
+    language,
+}) => {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), RAG_TIMEOUT_MS);
 
@@ -59,7 +65,9 @@ const callVibeTranslate = async ({articleId, title, description, tone, language}
 
         if (!response.ok) {
             const text = await response.text();
-            throw new Error(`RAG vibe-translate failed (${response.status}): ${text}`);
+            throw new Error(
+                `RAG vibe-translate failed (${response.status}): ${text}`
+            );
         }
 
         return await response.json();
@@ -68,7 +76,11 @@ const callVibeTranslate = async ({articleId, title, description, tone, language}
     }
 };
 
-export const getRagRouteForArticle = async ({articleId, title, description}) => {
+export const getRagRouteForArticle = async ({
+    articleId,
+    title,
+    description,
+}) => {
     // 1. Check if we have a valid cache in MongoDB
     if (articleId) {
         try {
@@ -156,7 +168,10 @@ export const personalizeArticle = async ({
     }
 
     // Skip LLM call when no transformation is needed
-    if (normalizedTone === 'neutral' && normalizedLanguage.toLowerCase() === 'english') {
+    if (
+        normalizedTone === 'neutral' &&
+        normalizedLanguage.toLowerCase() === 'english'
+    ) {
         const fallback = {
             title,
             description,
@@ -197,5 +212,72 @@ export const personalizeArticle = async ({
         cache[cacheKey] = fallback;
         await writeUserCache(userId, cache);
         return fallback;
+    }
+};
+
+export const generateVibeVideo = async ({articleId, title, description, summary}) => {
+    const toClientVideoUrl = (rawUrl, baseUrl) => {
+        const value = String(rawUrl || '').trim();
+        if (!value) return null;
+        if (/^https?:\/\//i.test(value)) return value;
+        return `${baseUrl}${value.startsWith('/') ? value : `/${value}`}`;
+    };
+
+    const fallback = {
+        // Small, publicly hosted sample clip to keep the UX unblocked when AI fails
+        videoUrl:
+            process.env.FALLBACK_VIDEO_URL ||
+            'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+        prompt: 'Fallback demo video (AI generation unavailable)'.concat(
+            title ? ` | Title: ${title}` : ''
+        ),
+    };
+
+    const RAG_SERVER_URL =
+        process.env.RAG_SERVER_URL || 'http://127.0.0.1:8100';
+    // Video generation is extremely slow (60s+), so we use a very generous timeout
+    const VIDEO_TIMEOUT_MS = 120000;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), VIDEO_TIMEOUT_MS);
+
+    try {
+        const response = await fetch(`${RAG_SERVER_URL}/rag/vibe-video`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            signal: controller.signal,
+            body: JSON.stringify({
+                article_id: String(articleId),
+                title,
+                description,
+                summary,
+            }),
+        });
+
+        if (!response.ok) {
+            const errBody = await response.text();
+            throw new Error(`RAG Video server error: ${errBody}`);
+        }
+
+        const json = await response.json();
+        const resolvedVideoUrl = toClientVideoUrl(
+            json?.video_url,
+            RAG_SERVER_URL
+        );
+        if (!resolvedVideoUrl) {
+            throw new Error('RAG Video server returned no video_url field');
+        }
+
+        return {
+            videoUrl: resolvedVideoUrl,
+            prompt: json.prompt_used,
+        };
+    } catch (error) {
+        console.error(
+            'Video generation failed, returning fallback clip:',
+            error
+        );
+        return fallback;
+    } finally {
+        clearTimeout(timeout);
     }
 };

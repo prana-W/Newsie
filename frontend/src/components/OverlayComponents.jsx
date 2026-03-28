@@ -1,6 +1,14 @@
 import {useState, useEffect, useRef} from 'react';
 import {motion, AnimatePresence} from 'framer-motion';
-import {ThumbsUp, ThumbsDown, MessageCircle, X, Send, Languages} from 'lucide-react';
+import {
+    ThumbsUp,
+    ThumbsDown,
+    MessageCircle,
+    X,
+    Send,
+    Languages,
+    Tv,
+} from 'lucide-react';
 import {toast} from 'sonner';
 import {
     fetchComments as fetchCommentsApi,
@@ -8,7 +16,9 @@ import {
     dislikeNews as dislikeNewsApi,
     postComment,
     translateNews,
+    generateNewsVideo,
 } from '@/lib/newsApi';
+import AIVideoModal from './AIVideoModal';
 
 const isDemoId = (id) => !id || String(id).startsWith('demo-');
 
@@ -168,7 +178,10 @@ export function TranslateButton({newsId, onTranslated}) {
             >
                 <motion.div
                     animate={translating ? {rotate: [0, 15, -15, 0]} : {}}
-                    transition={{duration: 0.5, repeat: translating ? Infinity : 0}}
+                    transition={{
+                        duration: 0.5,
+                        repeat: translating ? Infinity : 0,
+                    }}
                     className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-md transition-colors duration-200 ${
                         isOpen
                             ? 'bg-[#a78bfa]/90 text-white shadow-lg shadow-[#a78bfa]/30'
@@ -377,7 +390,10 @@ export function Comment({newsId, initialCount = 0}) {
                             <div
                                 ref={listRef}
                                 className="flex-1 overflow-y-auto px-5 py-4 space-y-4"
-                                style={{minHeight: '120px', maxHeight: 'calc(65vh - 140px)'}}
+                                style={{
+                                    minHeight: '120px',
+                                    maxHeight: 'calc(65vh - 140px)',
+                                }}
                             >
                                 {loading ? (
                                     <div className="flex items-center justify-center h-32">
@@ -481,6 +497,78 @@ export function Comment({newsId, initialCount = 0}) {
     );
 }
 
+// ─── AI Video Button ───────────────────────────────────────────────────────
+export function AIVideoButton({newsId}) {
+    const [generating, setGenerating] = useState(false);
+    const [videoUrl, setVideoUrl] = useState(null);
+    const [prompt, setPrompt] = useState(null);
+    const [showModal, setShowModal] = useState(false);
+
+    const handleGenerate = async () => {
+        if (generating) return;
+
+        // Instant demo fallback so the button works on mock data too
+        if (isDemoId(newsId)) {
+            setPrompt(
+                'Demo animation preview — load live news for real AI video'
+            );
+            setVideoUrl(
+                'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
+            );
+            setShowModal(true);
+            return;
+        }
+
+        setGenerating(true);
+        setShowModal(true);
+        setVideoUrl(null);
+
+        try {
+            const data = await generateNewsVideo(newsId);
+            if (data?.videoUrl) {
+                setVideoUrl(data.videoUrl);
+                setPrompt(data.prompt);
+                toast.success('AI Animation generated!');
+            } else {
+                toast.error('AI Animation did not return a video');
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error('AI Animation failed');
+            setShowModal(false);
+        } finally {
+            setGenerating(false);
+        }
+    };
+
+    return (
+        <div className="relative">
+            <motion.button
+                onClick={handleGenerate}
+                whileTap={{scale: 0.8}}
+                className="flex flex-col items-center gap-1 group"
+            >
+                <div
+                    className={`w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-md bg-white/10 text-white/80 transition-all duration-200 group-hover:bg-[#a78bfa]/20 group-hover:text-[#ddd6fe] group-hover:shadow-lg group-hover:shadow-[#a78bfa]/20`}
+                >
+                    <Tv className="w-5 h-5" />
+                </div>
+                <span className="text-[11px] font-medium text-white/70">
+                    AI Video
+                </span>
+            </motion.button>
+
+            <AIVideoModal
+                isOpen={showModal}
+                onClose={() => setShowModal(false)}
+                videoUrl={videoUrl}
+                generating={generating}
+                prompt={prompt}
+            />
+        </div>
+    );
+}
+
 // ─── Combined Overlay ───────────────────────────────────────────────────────
 function OverlayComponents({
     newsId,
@@ -493,6 +581,7 @@ function OverlayComponents({
         <div className="flex flex-col items-center gap-3">
             <Like newsId={newsId} initialCount={initialLikes} />
             <Dislike newsId={newsId} initialCount={initialDislikes} />
+            <AIVideoButton newsId={newsId} />
             <TranslateButton newsId={newsId} onTranslated={onTranslated} />
             <Comment newsId={newsId} initialCount={initialComments} />
         </div>

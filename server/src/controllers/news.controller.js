@@ -15,6 +15,10 @@ import {
 } from '../services/personalization.service.js';
 
 const FEED_PAGE_SIZE = 7;
+const FEED_EAGER_PERSONALIZATION_COUNT = Math.max(
+    0,
+    Math.min(Number(process.env.FEED_EAGER_PERSONALIZATION_COUNT || 1), 10)
+);
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
@@ -314,6 +318,10 @@ export const getNewsFeed = asyncHandler(async (req, res) => {
         req.query.tone || user?.preferences?.tone || 'neutral';
     const preferredLanguage =
         req.query.language || user?.preferences?.language || 'English';
+    const shouldPersonalizeFeed = !(
+        preferredTone === 'neutral' &&
+        preferredLanguage.toLowerCase() === 'english'
+    );
 
     const blendedArticles = (
         await buildBlend({
@@ -322,20 +330,42 @@ export const getNewsFeed = asyncHandler(async (req, res) => {
         })
     ).slice(0, limit);
 
-    const articles = await Promise.all(
-        blendedArticles.map(async (article) => {
-            const personalized = await personalizeArticle({
-                userId: user?._id || 'guest',
-                articleId: article._id,
-                title: article.title,
-                description: article.description,
-                tone: preferredTone,
-                language: preferredLanguage,
-            });
+    const eagerCount = shouldPersonalizeFeed
+        ? Math.min(FEED_EAGER_PERSONALIZATION_COUNT, blendedArticles.length)
+        : 0;
 
-            return normalizeArticle({article, personalized});
-        })
-    );
+    const personalizedByIndex = new Array(blendedArticles.length).fill(null);
+
+    // Lazy personalization: avoid bursting Gemini calls for every card at once.
+    for (let i = 0; i < eagerCount; i += 1) {
+        const article = blendedArticles[i];
+        personalizedByIndex[i] = await personalizeArticle({
+            userId: user?._id || 'guest',
+            articleId: article._id,
+            title: article.title,
+            description: article.description,
+            tone: preferredTone,
+            language: preferredLanguage,
+        });
+    }
+
+    const articles = blendedArticles.map((article, index) => {
+        const normalized = normalizeArticle({
+            article,
+            personalized: personalizedByIndex[index],
+        });
+
+        if (shouldPersonalizeFeed && index >= eagerCount) {
+            return {
+                ...normalized,
+                personalizationPending: true,
+                requestedTone: preferredTone,
+                requestedLanguage: preferredLanguage,
+            };
+        }
+
+        return normalized;
+    });
 
     const nextCursor =
         blendedArticles.length === limit
@@ -365,8 +395,7 @@ export const generateVideo = asyncHandler(async (req, res) => {
               title: 'Demo headline',
               description:
                   'AI video preview for demo data — replace with live article to get tailored animation.',
-              body:
-                  'Demo ET summary: Market anchors debate policy shifts, sector rotation, earnings surprises, and investor sentiment with playful newsroom satire.',
+              body: 'Demo ET summary: Market anchors debate policy shifts, sector rotation, earnings surprises, and investor sentiment with playful newsroom satire.',
           }
         : await News.findById(newsId);
 

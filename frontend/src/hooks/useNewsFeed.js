@@ -2,6 +2,8 @@ import {useCallback, useEffect, useMemo, useState} from 'react';
 import {fetchNewsFeed} from '@/lib/newsApi';
 import {newsData} from '@/data/newsData';
 
+const FEED_PAGE_SIZE = 5;
+
 const mapDemoArticle = (item, index) => ({
     id: `demo-${item.id || index + 1}`,
     title: item.title,
@@ -25,6 +27,7 @@ export default function useNewsFeed() {
     const [hasMore, setHasMore] = useState(true);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [initialFetchDone, setInitialFetchDone] = useState(false);
 
     const preferences = useMemo(() => {
         try {
@@ -43,7 +46,7 @@ export default function useNewsFeed() {
         try {
             const data = await fetchNewsFeed({
                 cursor,
-                limit: 7,
+                limit: FEED_PAGE_SIZE,
                 tone: preferences?.tone,
                 language: preferences?.language,
             });
@@ -68,16 +71,18 @@ export default function useNewsFeed() {
             setHasMore(Boolean(data?.hasMore));
         } catch (err) {
             setError(err.message || 'Failed to fetch news feed');
+            // Prevent tight auto-retry loops when backend is unavailable.
+            setHasMore(false);
         } finally {
             setLoading(false);
         }
     }, [articles.length, cursor, hasMore, loading, preferences]);
 
     useEffect(() => {
-        if (articles.length === 0) {
-            loadNext();
-        }
-    }, [articles.length, loadNext]);
+        if (initialFetchDone) return;
+        setInitialFetchDone(true);
+        loadNext();
+    }, [initialFetchDone, loadNext]);
 
     return {
         articles,

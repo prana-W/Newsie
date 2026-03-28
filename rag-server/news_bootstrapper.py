@@ -118,6 +118,48 @@ class NewsBootstrapper:
         result = self.collection.get(include=[])
         return set(result["ids"]) if result and result["ids"] else set()
 
+    @staticmethod
+    def _mongo_news_query() -> dict:
+        """Select Mongo news documents that have at least some text content."""
+        return {
+            "$or": [
+                {"title": {"$exists": True, "$ne": ""}},
+                {"description": {"$exists": True, "$ne": ""}},
+            ]
+        }
+
+    def get_sync_counts(self) -> dict:
+        """Return comparable content counts for Mongo news vs Chroma coverage.
+
+        The Chroma count is computed by checking which Mongo news `_id` values
+        already exist as document IDs in the Chroma collection.
+        """
+        existing_ids = self._get_existing_ids()
+        mongo_client: Optional[MongoClient] = None
+        mongo_news_count = 0
+        chroma_news_count = 0
+
+        try:
+            mongo_client = MongoClient(
+                self.mongo_uri, serverSelectionTimeoutMS=10000
+            )
+            db = mongo_client[self.mongo_db]
+            coll = db[self.mongo_collection]
+
+            cursor = coll.find(self._mongo_news_query(), {"_id": 1})
+            for doc in cursor:
+                mongo_news_count += 1
+                if str(doc["_id"]) in existing_ids:
+                    chroma_news_count += 1
+        finally:
+            if mongo_client is not None:
+                mongo_client.close()
+
+        return {
+            "mongo_news_count": mongo_news_count,
+            "chroma_news_count": chroma_news_count,
+        }
+
     def _generate_summary(self, text: str) -> str:
         """Generate a topic summary for an article via Gemini."""
         response = self.llm.invoke(TOPIC_PROMPT.format(article_text=text[:3000]))
@@ -125,14 +167,14 @@ class NewsBootstrapper:
 
     def seed(
         self,
-        limit: int = 100,
+        limit: int | None = 100,
         batch_size: int = 10,
         force: bool = False,
     ) -> dict:
         """Seed ChromaDB with news articles not already embedded.
 
         Args:
-            limit: Max articles to process.
+            limit: Optional max articles to process.
             batch_size: Articles to process before upserting.
             force: If True, re-embeds even if already present.
 
@@ -162,10 +204,14 @@ class NewsBootstrapper:
             coll = db[self.mongo_collection]
 
             cursor = (
-                coll.find({}, {"_id": 1, "title": 1, "description": 1, "section": 1})
+                coll.find(
+                    self._mongo_news_query(),
+                    {"_id": 1, "title": 1, "description": 1, "section": 1},
+                )
                 .sort([("_id", -1)])
-                .limit(limit)
             )
+            if limit and limit > 0:
+                cursor = cursor.limit(limit)
 
             batch_ids: list[str] = []
             batch_docs: list[str] = []

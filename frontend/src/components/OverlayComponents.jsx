@@ -513,7 +513,7 @@ export function AIVideoButton({newsId}) {
                 'Demo animation preview — load live news for real AI video'
             );
             setVideoUrl(
-                'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
+                'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4'
             );
             setShowModal(true);
             return;

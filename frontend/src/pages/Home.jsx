@@ -55,6 +55,8 @@ export default function Home() {
         onSwipeLeft: () => navigate('/timelines'),
     });
 
+    const activeSwipeHandlers = showDetail ? {} : swipeHandlers;
+
     // Desktop wheel support
     const handleWheel = useCallback(
         (e) => {
@@ -67,9 +69,10 @@ export default function Home() {
 
     return (
         <div
-            className="relative w-full h-full overflow-hidden bg-black"
-            {...swipeHandlers}
+            className="relative w-full h-full overflow-hidden overscroll-none bg-black"
+            {...activeSwipeHandlers}
             onWheel={handleWheel}
+            style={showDetail ? undefined : {touchAction: 'none'}}
         >
             {error && (
                 <div className="absolute top-20 left-4 right-4 z-30 rounded-xl bg-red-500/15 border border-red-400/30 text-red-200 px-3 py-2 text-sm">

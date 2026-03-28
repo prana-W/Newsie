@@ -26,7 +26,7 @@ Rules:
 4. Include visual structure: subject, setting, scene progression, camera plan,
    lens style, lighting, motion cues, transitions, and synchronized audio cues.
 5. Keep continuity-friendly wording so the clip can be extended seamlessly.
-6. Include explicit cinematic detail for 9:16 mobile framing.
+6. Keep center-weighted composition so the output can be safely cropped for 9:16 mobile playback.
 
 Return ONLY the final prompt text. No labels. No markdown.
 """
@@ -34,7 +34,7 @@ Return ONLY the final prompt text. No labels. No markdown.
 PROMPT_MODEL_FALLBACKS = ("gemini-2.5-flash", "gemini-2.0-flash")
 
 DEFAULT_FALLBACK_VIDEO_URL = (
-    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
 )
 
 
@@ -116,7 +116,7 @@ class VibeVideoGenerator:
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
         self.prompt_model = os.getenv("VEO_PROMPT_MODEL", "gemini-2.5-pro")
-        self.aspect_ratio = os.getenv("VEO_ASPECT_RATIO", "9:16")
+        self.aspect_ratio = os.getenv("VEO_ASPECT_RATIO", "16:9")
         self.resolution = os.getenv("VEO_RESOLUTION", "720p")
         self.clip_duration_seconds = 8
 
@@ -129,6 +129,14 @@ class VibeVideoGenerator:
             2,
             min(7, math.ceil(self.target_duration_seconds / self.clip_duration_seconds)),
         )
+
+        # Gemini API currently requires 16:9 input for video extension in this environment.
+        if self.target_segments > 1 and self.aspect_ratio != "16:9":
+            logger.warning(
+                "Overriding VEO_ASPECT_RATIO=%s to 16:9 for extension compatibility",
+                self.aspect_ratio,
+            )
+            self.aspect_ratio = "16:9"
 
         self.fallback_video_url = os.getenv(
             "VEO_FALLBACK_VIDEO_URL",

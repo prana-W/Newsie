@@ -43,6 +43,13 @@ from fastapi.staticfiles import StaticFiles
 # ---------------------------------------------------------------------------
 load_dotenv()
 
+
+def _env_flag(name: str, default: bool = False) -> bool:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() in {"1", "true", "yes", "on"}
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
@@ -83,20 +90,40 @@ async def lifespan(app: FastAPI):
     except Exception:
         logger.warning("Failed to initialise VibeVideoGenerator (VEO 3.1 features will be unavailable)")
 
-    # Auto-seed ChromaDB if empty
-    try:
-        doc_count = router_instance.collection.count()
-        if doc_count == 0:
-            logger.info("ChromaDB is empty — triggering bootstrap seed...")
+    bootstrap_on_startup = _env_flag("RAG_BOOTSTRAP_ON_STARTUP", default=False)
+
+    # Auto-seed is expensive (many LLM calls). Keep it opt-in to avoid startup loops in dev.
+    if bootstrap_on_startup:
+        try:
             bootstrapper = NewsBootstrapper()
-            stats = await to_thread(
-                bootstrapper.seed, limit=50, batch_size=10
-            )
-            logger.info("Bootstrap complete: %s", stats)
-        else:
-            logger.info("ChromaDB has %d docs — skipping bootstrap.", doc_count)
-    except Exception:
-        logger.exception("Bootstrap seed failed (non-fatal, server will continue)")
+            counts = await to_thread(bootstrapper.get_sync_counts)
+            mongo_news_count = counts["mongo_news_count"]
+            chroma_news_count = counts["chroma_news_count"]
+
+            if chroma_news_count < mongo_news_count:
+                logger.info(
+                    "Chroma coverage is behind Mongo (%d < %d) — triggering bootstrap seed...",
+                    chroma_news_count,
+                    mongo_news_count,
+                )
+                stats = await to_thread(
+                    bootstrapper.seed,
+                    limit=None,
+                    batch_size=10,
+                )
+                logger.info("Bootstrap catch-up complete: %s", stats)
+            else:
+                logger.info(
+                    "Chroma coverage is up to date (%d/%d) — skipping bootstrap.",
+                    chroma_news_count,
+                    mongo_news_count,
+                )
+        except Exception:
+            logger.exception("Bootstrap seed check failed (non-fatal, server will continue)")
+    else:
+        logger.info(
+            "Startup bootstrap disabled (RAG_BOOTSTRAP_ON_STARTUP=false)."
+        )
 
     yield
 
@@ -335,9 +362,22 @@ async def bootstrap_news(
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(
-        "main:app",
-        host="0.0.0.0",
-        port=int(os.getenv("RAG_SERVER_PORT", "8100")),
-        reload=True,
-    )
+    reload_enabled = _env_flag("RAG_RELOAD", default=False)
+
+    uvicorn_kwargs = {
+        "host": "0.0.0.0",
+        "port": int(os.getenv("RAG_SERVER_PORT", "8100")),
+        "reload": reload_enabled,
+    }
+
+    if reload_enabled:
+        # Exclude runtime artifact paths that change frequently and can cause reload loops.
+        uvicorn_kwargs["reload_excludes"] = [
+            "./.chroma/*",
+            "./static/videos/*",
+            "./__pycache__/*",
+            "./out*.txt",
+            "./direct_rag_test.json",
+        ]
+
+    uvicorn.run("main:app", **uvicorn_kwargs)

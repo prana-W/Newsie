@@ -215,7 +215,12 @@ export const personalizeArticle = async ({
     }
 };
 
-export const generateVibeVideo = async ({articleId, title, description, summary}) => {
+export const generateVibeVideo = async ({
+    articleId,
+    title,
+    description,
+    summary,
+}) => {
     const toClientVideoUrl = (rawUrl, baseUrl) => {
         const value = String(rawUrl || '').trim();
         if (!value) return null;
@@ -227,7 +232,7 @@ export const generateVibeVideo = async ({articleId, title, description, summary}
         // Small, publicly hosted sample clip to keep the UX unblocked when AI fails
         videoUrl:
             process.env.FALLBACK_VIDEO_URL ||
-            'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+            'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
         prompt: 'Fallback demo video (AI generation unavailable)'.concat(
             title ? ` | Title: ${title}` : ''
         ),

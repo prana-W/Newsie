@@ -49,31 +49,52 @@ const AIVideoModal = ({isOpen, onClose, videoUrl, generating, prompt}) => {
                                     <div className="relative">
                                         <motion.div
                                             animate={{rotate: 360}}
-                                            transition={{duration: 2, repeat: Infinity, ease: 'linear'}}
+                                            transition={{
+                                                duration: 2,
+                                                repeat: Infinity,
+                                                ease: 'linear',
+                                            }}
                                             className="w-16 h-16 rounded-full border-t-2 border-r-2 border-[#a78bfa]"
                                         />
                                         <motion.div
                                             animate={{scale: [1, 1.2, 1]}}
-                                            transition={{duration: 1.5, repeat: Infinity}}
+                                            transition={{
+                                                duration: 1.5,
+                                                repeat: Infinity,
+                                            }}
                                             className="absolute inset-0 flex items-center justify-center"
                                         >
                                             <Wand2 className="w-6 h-6 text-[#a78bfa]" />
                                         </motion.div>
                                     </div>
                                     <div className="space-y-2">
-                                        <h4 className="text-lg font-bold text-white">Generating 9:16 Story Video...</h4>
+                                        <h4 className="text-lg font-bold text-white">
+                                            Generating 9:16 Story Video...
+                                        </h4>
                                         <p className="text-white/60 text-xs leading-relaxed max-w-[16rem] mx-auto">
-                                            Building a mobile-first multi-segment Veo 3.1 animation (15-60s) with detailed ET summary context.
+                                            Building a mobile-first
+                                            multi-segment Veo 3.1 animation
+                                            (15-60s) with detailed ET summary
+                                            context.
                                             <br />
-                                            <span className="text-[#a78bfa] italic mt-2 block font-medium">Rendering can take a bit for longer videos.</span>
+                                            <span className="text-[#a78bfa] italic mt-2 block font-medium">
+                                                Rendering can take a bit for
+                                                longer videos.
+                                            </span>
                                         </p>
                                     </div>
                                     <div className="flex gap-1.5">
                                         {[0, 1, 2].map((i) => (
                                             <motion.div
                                                 key={i}
-                                                animate={{opacity: [0.3, 1, 0.3]}}
-                                                transition={{duration: 1, repeat: Infinity, delay: i * 0.2}}
+                                                animate={{
+                                                    opacity: [0.3, 1, 0.3],
+                                                }}
+                                                transition={{
+                                                    duration: 1,
+                                                    repeat: Infinity,
+                                                    delay: i * 0.2,
+                                                }}
                                                 className="w-2 h-2 rounded-full bg-[#a78bfa]"
                                             />
                                         ))}

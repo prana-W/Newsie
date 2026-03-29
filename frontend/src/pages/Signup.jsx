@@ -94,7 +94,7 @@ export default function SignupUser() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-[#0a0a0f] to-[#0d1117] flex flex-col items-center justify-center px-6 font-['Inter'] py-8">
+        <div className="h-full w-full overflow-y-auto bg-gradient-to-br from-[#0a0a0f] to-[#0d1117] flex flex-col items-center px-6 font-['Inter'] py-12">
             {/* Brand */}
             <div className="mb-10 text-center animate-[fadeUp_0.4s_ease-out]">
                 <span

@@ -1,4 +1,4 @@
-import {Home, About, NotFound, Test, Timelines, TimelineDetail} from './pages';
+import {Home, About, NotFound, Test, Timelines, TimelineDetail, AIVideos} from './pages';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
 import { ThemeProvider } from "@/components/theme-provider";
 import Layout from './Layout.jsx';
@@ -16,25 +16,20 @@ const router = createBrowserRouter([
             {
                 path: '',
                 element: (
-                    <ProtectedRoute>
+
                         <Home />
-                    </ProtectedRoute>
                 ),
             },
             {
                 path: 'about',
                 element: (
-                    <ProtectedRoute>
                         <About />
-                    </ProtectedRoute>
                 ),
             },
             {
                 path: 'test',
                 element: (
-                    <ProtectedRoute>
                         <Test />
-                    </ProtectedRoute>
                 ),
             },
             {
@@ -48,18 +43,18 @@ const router = createBrowserRouter([
             {
                 path: 'timelines',
                 element: (
-                    <ProtectedRoute>
                         <Timelines />
-                    </ProtectedRoute>
                 ),
             },
             {
                 path: 'timelines/:id',
                 element: (
-                    <ProtectedRoute>
                         <TimelineDetail />
-                    </ProtectedRoute>
                 ),
+            },
+            {
+                path: 'ai-videos',
+                element: <AIVideos />,
             },
             {
                 path: '*',

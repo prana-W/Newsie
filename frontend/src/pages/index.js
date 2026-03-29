@@ -4,5 +4,6 @@ import NotFound from './NotFound';
 import Test from './Test';
 import Timelines from './Timelines';
 import TimelineDetail from './TimelineDetail';
+import AIVideos from './AIVideos';
 
-export {Home, About, NotFound, Test, Timelines, TimelineDetail};
+export {Home, About, NotFound, Test, Timelines, TimelineDetail, AIVideos};
